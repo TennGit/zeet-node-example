@@ -4,9 +4,11 @@
  * Module dependencies.
  */
 
+
 var app = require('../app');
 var debug = require('debug')('dockit-demo:server');
 var http = require('http');
+const request = require('request')
 
 /**
  * Get port from environment and store in Express.
@@ -28,6 +30,31 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+server.get('/api/inspektlab-url', (req, res) => {
+  const fakeCaseId = () => Math.random().toString(16)
+  const requestBody = () => ({
+    // eslint-disable-next-line max-len
+    'apiKey': '63ba67bf989fb8860251a70f1458b7a4338155a69a68f0e3b41fd3c6d52ad3fe901b8c100472f2b048e6efd5ec30307801f56814bcefb297fc96469b1e600dea',
+    'caseId': fakeCaseId(),
+  })
+
+  const requestOptions = {
+    url: 'https://urlgen.inspektlabs.com/newToken',
+    method: 'POST',
+    json: requestBody(),
+  };
+  request(requestOptions, (err, response, body) => {
+    if (err) {
+      console.log(err);
+    } else if (response.statusCode === 200) {
+      res.send(body)
+      console.log(body);
+    } else {
+      console.log(response.statusCode);
+    }
+  });
+})
 
 /**
  * Normalize a port into a number, string, or false.
@@ -67,11 +94,9 @@ function onError(error) {
     case 'EACCES':
       console.error(bind + ' requires elevated privileges');
       process.exit(1);
-      break;
     case 'EADDRINUSE':
       console.error(bind + ' is already in use');
       process.exit(1);
-      break;
     default:
       throw error;
   }
